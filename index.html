@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Mobile map</title>
+    <style>
+        /* Define a CSS class for map rotation */
+        .rotated-map {
+            transform-origin: center center;
+            transform: rotate(45deg); /* Adjust the rotation angle as needed */
+        }
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+            width: 100vw;
+        }
+
+    </style>
+</head>
+<body>  
+    <div id = "map"></div>
+    <script>
+        // Initialize the leaflet map
+        L.mapbox.accessToken = 'pk.eyJ1IjoieXFpbmciLCJhIjoiY2xsdzJhMm1mMXpodTNjcHZyc29zaGsxYSJ9.iijVfH5AG9g1Scb_zBYiYA';
+        var map = L.map('map').fitWorld();
+/*
+        var corner1 = L.latLng(47.403934453603725, 8.545603106349375),
+        corner2 = L.latLng(47.40670829225139, 8.542888710894422),
+        mybounds = L.latLngBounds(corner1, corner2);
+*/
+        L.tileLayer('https://api.mapbox.com/styles/v1/yqing/cllwfkv1500fd01qu7knch522/tiles/256/{z}/{x}/{y}@2x?access_token=' + L.mapbox.accessToken,{
+            tileSize: 512,
+            /*bounds: mybounds,*/
+            zoomOffset: -1,
+            attribution:'© <a href="https://www.mapbox.com/contribute/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        // Display the route on the map
+        var myStyle = {
+            "color": "#2b6999",
+            "weight": 8,
+            "opacity": 1
+        };
+        var myGeoJSON = {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[8.54516126, 47.4042067], [8.54539571, 47.40459743], [8.54539592, 47.40463866], [8.54535435, 47.40466317], [8.54532359, 47.40467582], [8.5442842, 47.40494541], [8.54446928, 47.405333], [8.54553219, 47.40521497], [8.54590905, 47.40520771], [8.54589698, 47.40557713], [8.5452452, 47.40567516], [8.54326881, 47.4063037], [8.54266823, 47.40542678], [8.54264543, 47.40535417], [8.54268969, 47.40511817], [8.54279698, 47.40514359]]}, "id": "232ee6a8-c4fc-4775-a7e6-a033cf8e6e9b", "properties": {"name": ""}}]};
+        L.geoJSON(myGeoJSON, {
+            style: myStyle
+        }).addTo(map);
+
+        // Enable rotation with user interactions
+        var initialAngle = 0;
+        var isRotating = false;
+
+        map.on('mousedown', function (e) {
+            isRotating = true;
+            initialAngle = map.getBearing() || 0;
+        });
+
+        map.on('mouseup', function (e) {
+            isRotating = false;
+        });
+
+        map.on('mousemove', function (e) {
+            if (isRotating) {
+                var newAngle = initialAngle - (e.containerPoint.x - map.getSize().x / 2) / 10;
+                map.setBearing(newAngle);
+            }
+        });
+
+        //Real time location tracker
+        if (! navigator.geolocation){
+            console.log('your browser does not support the geolocation')
+        } else {
+            setInterval(() => {
+                navigator.geolocation.getCurrentPosition(getPosition)
+            }, 500);
+        }
+
+        var marker, circle;
+        // Function to get and record current location
+        function getPosition(position){
+            var lat = position.coords.latitude
+            var long = position.coords.longitude
+            var accuracy = position.coords.accuracy
+
+            if (marker){
+                map.removeLayer(marker)
+            }
+
+            if (circle){
+                map.removeLayer(circle)
+            }
+
+            circle = L.circle([lat, long],{color: '#c65247', fillColor: '#c65247', fillOpacity: 1, radius: 5})
+
+            var featureGroup = L.featureGroup([circle]).addTo(map)
+            map.fitBounds(featureGroup.getBounds()) // Delete later
+        }
+    </script>
+    
+</body>
+</html>
