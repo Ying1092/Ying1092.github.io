@@ -20,13 +20,15 @@
 <body>
     <button type ="button" id="startRecording">Start Recording</button>
     <button type ="button" id="stopRecording" disabled>Stop Recording</button>
+    <button type ="button" id="Download_Locations" disabled>Download Locations</button>
+    <button type ="button" id="Download_Interactions" disabled>Download Interactions</button>
     
     <div id = "map"></div>
     <script>
         /* MAP */
         // Initialize the leaflet map
         L.mapbox.accessToken = 'pk.eyJ1IjoieXFpbmciLCJhIjoiY2xsdzJhMm1mMXpodTNjcHZyc29zaGsxYSJ9.iijVfH5AG9g1Scb_zBYiYA';
-        var map = L.map('map').fitWorld();
+        var map = L.map('map').setView([47.40459682509026, 8.543922215320796], 20);
 /*
         var corner1 = L.latLng(47.403934453603725, 8.545603106349375),
         corner2 = L.latLng(47.40670829225139, 8.542888710894422),
@@ -49,26 +51,6 @@
             style: myStyle
         }).addTo(map);
         
-        // Enable rotation with user interactions
-        var initialAngle = 0;
-        var isRotating = false;
-
-        map.on('mousedown', function (e) {
-            isRotating = true;
-            initialAngle = map.getBearing() || 0;
-        });
-
-        map.on('mouseup', function (e) {
-            isRotating = false;
-        });
-
-        map.on('mousemove', function (e) {
-            if (isRotating) {
-                var newAngle = initialAngle - (e.containerPoint.x - map.getSize().x / 2) / 10;
-                map.setBearing(newAngle);
-            }
-        });
-
         /* RECORDING CONTROL */
         // Initialize variables for location recording
         let recording = false;
@@ -80,7 +62,9 @@
             recording = true;
             document.getElementById('startRecording').disabled = true;
             document.getElementById('stopRecording').disabled = false;
-            recordLocation();
+            document.getElementById('Download_Locations').disabled = true;
+            document.getElementById('Download_Interactions').disabled = true;
+            startRecording();
         });
 
         // Function to stop recording
@@ -88,7 +72,17 @@
             recording = false;
             document.getElementById('startRecording').disabled = false;
             document.getElementById('stopRecording').disabled = true;
+            document.getElementById('Download_Locations').disabled = false;
+            document.getElementById('Download_Interactions').disabled = false;
+            stopRecording();
+        });
+
+        // Funcation to download 
+        document.getElementById('Download_Locations').addEventListener('click', () => {
             downloadLocations();
+        });
+
+        document.getElementById('Download_Interactions').addEventListener('click', () => {
             downloadInteractionData();
         });
        
@@ -124,6 +118,11 @@
         }
 
         /* INTERACTION */
+        function startRecording() {
+            map.on('zoomend', recordZoom);
+            map.on('moveend', recordPan);
+        }
+
         function recordZoom(event) {
         if (recording) {
             // Record zoom interaction
@@ -142,6 +141,12 @@
             latlng: event.target.getCenter(),
             });
          }
+        }
+
+        function stopRecording() {
+            map.off('zoomend', recordZoom);
+            map.off('moveend', recordPan);
+            //console.log('Recording stopped');
         }
 
         /* DOWNLOAD */
