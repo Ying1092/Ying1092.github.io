@@ -7,11 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Mobile map</title>
     <style>
-        /* Define a CSS class for map rotation */
-        .rotated-map {
-            transform-origin: center center;
-            transform: rotate(45deg); /* Adjust the rotation angle as needed */
-        }
         body {
             padding: 0;
             margin: 0;
@@ -98,7 +93,6 @@
             circle = L.circle([lat, long],{color: '#c65247', fillColor: '#c65247', fillOpacity: 1, radius: 5})
 
             var featureGroup = L.featureGroup([circle]).addTo(map)
-            //map.fitBounds(featureGroup.getBounds()) // Delete later
         }
     </script>
     
