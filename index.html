@@ -18,6 +18,7 @@
     </style>
 </head>
 <body>
+    <button type ="button" id="ParticipantID">Participant ID</button>
     <button type ="button" id="startRecording">Start Recording</button>
     <button type ="button" id="stopRecording" disabled>Stop Recording</button>
     <button type ="button" id="Download_Locations" disabled>Download Locations</button>
@@ -56,11 +57,17 @@
         let recording = false;
         const recordedLocations = [];
         const recordedInteractions = [];
+        var participant;
 
         // Function to start recording
+        document.getElementById('ParticipantID').addEventListener('click', () => {
+            participant = prompt('Please input participant ID', 999);
+        });
+
         document.getElementById('startRecording').addEventListener('click', () => {
             recording = true;
             document.getElementById('startRecording').disabled = true;
+            document.getElementById('ParticipantID').disabled = true;
             document.getElementById('stopRecording').disabled = false;
             document.getElementById('Download_Locations').disabled = true;
             document.getElementById('Download_Interactions').disabled = true;
@@ -70,6 +77,7 @@
         // Function to stop recording
         document.getElementById('stopRecording').addEventListener('click', () => {
             recording = false;
+            document.getElementById('ParticipantID').disabled = false;
             document.getElementById('startRecording').disabled = false;
             document.getElementById('stopRecording').disabled = true;
             document.getElementById('Download_Locations').disabled = false;
@@ -114,7 +122,6 @@
             circle = L.circle([lat, long],{color: '#c65247', fillColor: '#c65247', fillOpacity: 1, radius: 5})
 
             var featureGroup = L.featureGroup([circle]).addTo(map)
-            //map.fitBounds(featureGroup.getBounds()) // Delete later
         }
 
         /* INTERACTION */
@@ -157,7 +164,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'recorded_locations.txt';
+            a.download = participant + '_location.txt';
             a.click();
         }
 
@@ -168,7 +175,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'recorded_interaction.txt';
+            a.download = participant + '_interaction.txt';
             a.click();
         }
     </script>
