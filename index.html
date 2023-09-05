@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
     <script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
     <link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
     <meta charset="UTF-8">
@@ -37,7 +38,7 @@
 
         L.tileLayer('https://api.mapbox.com/styles/v1/yqing/cllwfkv1500fd01qu7knch522/tiles/256/{z}/{x}/{y}@2x?access_token=' + L.mapbox.accessToken,{
             tileSize: 512,
-            bounds: mybounds,
+            //bounds: mybounds,
             zoomOffset: -1,
             maxZoom: 22,
             attribution:'© <a href="https://www.mapbox.com/contribute/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -121,15 +122,25 @@
 
             if (recording) {
                 var time = Date.now();
-                recordedLocations.push({ lat, long, time});
+                recordedLocations.push({ lat, long, time, accuracy});
             }
 
             if (circle){
                 map.removeLayer(circle)
             }
 
-            circle = L.circle([lat, long],{color: '#c65247', fillColor: '#c65247', fillOpacity: 1, radius: 5}).addTo(map)
-            //var featureGroup = L.featureGroup([circle]).addTo(map)
+            // Display the closest point on the route
+            
+            var desiredLocation = {
+                "type": "Feature",
+                "geometry": {
+                "type": "Point",
+                "coordinates": [long, lat] 
+                }
+            };
+            var nearestPointOnLine = turf.pointOnLine(myGeoJSON, desiredLocation);
+            var nearestPointCoords = nearestPointOnLine.geometry.coordinates;
+            circle = L.circle([nearestPointCoords[1],nearestPointCoords[0]],{color: '#c65247', fillColor: '#c65247', fillOpacity: 1, radius: 5}).addTo(map)      
         }
 
         /* INTERACTION */
