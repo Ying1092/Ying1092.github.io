@@ -26,6 +26,8 @@
 </head>
 <body>
     <div id="button-container">
+        <button type ="button" id="Route_1">Route1</button>
+        <button type ="button" id="Route_2">Route2</button>
         <button type ="button" id="ParticipantID">Participant ID</button>
         <button type ="button" id="startRecording" disabled>Start Recording</button>
         <button type ="button" id="stopRecording" disabled>Stop Recording</button>
@@ -38,35 +40,64 @@
         // Initialize the leaflet map
         L.mapbox.accessToken = 'pk.eyJ1IjoieXFpbmciLCJhIjoiY2xsdzJhMm1mMXpodTNjcHZyc29zaGsxYSJ9.iijVfH5AG9g1Scb_zBYiYA';
         var map = L.map('map').setView([47.40460386239871, 8.54384625978079], 18);
-
-        var corner1 = L.latLng(47.403934453603725, 8.545603106349375),
-        corner2 = L.latLng(47.40670829225139, 8.542888710894422),
-        mybounds = L.latLngBounds(corner1, corner2);
-
         L.tileLayer('https://api.mapbox.com/styles/v1/yqing/cllwfkv1500fd01qu7knch522/tiles/256/{z}/{x}/{y}@2x?access_token=' + L.mapbox.accessToken,{
             tileSize: 512,
-            //bounds: mybounds,
             zoomOffset: -1,
             maxZoom: 22,
+            minZoom: 18,
+            //maxBounds: mybounds, 
             attribution:'© <a href="https://www.mapbox.com/contribute/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
-        // Display the route on the map
+
+        // Display the route, start point & detination on the map
+        var myIcon = L.icon({
+            iconUrl: 'my-icon.png',
+            iconSize: [30, 30]
+        });
         var myStyle = {
             "color": "#2b6999",
             "weight": 8,
             "opacity": 1
         };
-        var myGeoJSON = {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[8.54516126, 47.4042067], [8.54539571, 47.40459743], [8.54539592, 47.40463866], [8.54535435, 47.40466317], [8.54532359, 47.40467582], [8.5442842, 47.40494541], [8.54446928, 47.405333], [8.54553219, 47.40521497], [8.54590905, 47.40520771], [8.54589698, 47.40557713], [8.5452452, 47.40567516], [8.54326881, 47.4063037], [8.54266823, 47.40542678], [8.54264543, 47.40535417], [8.54268969, 47.40511817], [8.54279698, 47.40514359]]}, "id": "232ee6a8-c4fc-4775-a7e6-a033cf8e6e9b", "properties": {"name": ""}}]};
-        L.geoJSON(myGeoJSON, {
-            style: myStyle
-        }).addTo(map);
-        // Display the start point & detination
-        var StartPoint = L.circle([47.4042067, 8.54516126],{color: '#000000', fillColor: '#000000', fillOpacity: 1, radius: 3}).addTo(map)
-        var myIcon = L.icon({
-            iconUrl: 'my-icon.png',
-            iconSize: [30, 30]
+        var myGeoJSON;
+        var StartPoint;
+        var corner1;
+        var corner2;
+        document.getElementById('Route_1').addEventListener('click', () => {
+            corner1 = L.latLng(47.403934453603725, 8.545603106349375);
+            corner2 = L.latLng(47.40670829225139, 8.542888710894422);
+            mybounds = L.latLngBounds(corner1, corner2);
+            map.setMaxBounds(mybounds);
+            map.on('drag', function () {
+                map.panInsideBounds(mybounds, { animate: false });
+            });
+            var mybounds = L.latLngBounds(corner1, corner2);
+            myGeoJSON = {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[8.54516126, 47.4042067], [8.54539571, 47.40459743], [8.54539592, 47.40463866], [8.54535435, 47.40466317], [8.54532359, 47.40467582], [8.5442842, 47.40494541], [8.54446928, 47.405333], [8.54553219, 47.40521497], [8.54590905, 47.40520771], [8.54589698, 47.40557713], [8.5452452, 47.40567516], [8.54326881, 47.4063037], [8.54266823, 47.40542678], [8.54264543, 47.40535417], [8.54268969, 47.40511817], [8.54279698, 47.40514359]]}, "id": "232ee6a8-c4fc-4775-a7e6-a033cf8e6e9b", "properties": {"name": ""}}]}; 
+            L.geoJSON(myGeoJSON, {
+                style: myStyle
+            }).addTo(map);     
+            L.marker([47.40519400, 8.54285708], {icon: myIcon}).addTo(map);
+            StartPoint = L.circle([47.4042067, 8.54516126],{color: '#000000', fillColor: '#000000', fillOpacity: 1, radius: 3}).addTo(map);
+            document.getElementById('Route_1').disabled = true;
+            document.getElementById('Route_2').disabled = true;
         });
-        L.marker([47.40519400, 8.54285708], {icon: myIcon}).addTo(map);
+        document.getElementById('Route_2').addEventListener('click', () => {
+            corner1 = L.latLng(47.40518313787518, 8.541853929744127);
+            corner2 = L.latLng(47.401326354623514, 8.545430748316875);
+            mybounds = L.latLngBounds(corner1, corner2);
+            map.setMaxBounds(mybounds);
+            map.on('drag', function () {
+                map.panInsideBounds(mybounds, { animate: false });
+            });
+            myGeoJSON = {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[8.54515916, 47.40420497], [8.54402458, 47.40451086], [8.54368274, 47.40394203], [8.54284455, 47.40416895], [8.5425038, 47.4042765], [8.54240322, 47.4043355], [8.54229057, 47.4044299], [8.54256147, 47.40490734], [8.54237372, 47.40495907], [8.54227716, 47.40498993], [8.54220742, 47.40500083], [8.54215243, 47.40499901], [8.54197943, 47.40496543], [8.54170182, 47.40481838], [8.54142153, 47.40466499], [8.54089448, 47.40434548], [8.54109817, 47.40417039], [8.54135326, 47.40391952], [8.54176378, 47.40345283], [8.54192918, 47.40327074], [8.54221814, 47.40301986], [8.54245346, 47.40285741], [8.54273375, 47.40269312], [8.54283299, 47.40278116]]}, "id": "5252f75a-2c59-4b69-a4eb-90255496d371", "properties": {"name": ""}}]}    
+            L.geoJSON(myGeoJSON, {
+                style: myStyle
+            }).addTo(map);     
+            L.marker([47.40283116, 8.54288299], {icon: myIcon}).addTo(map);
+            StartPoint = L.circle([47.4042067, 8.54516126],{color: '#000000', fillColor: '#000000', fillOpacity: 1, radius: 3}).addTo(map);
+            document.getElementById('Route_1').disabled = true;
+            document.getElementById('Route_2').disabled = true;
+        });   
         
         /* RECORDING CONTROL */
         // Initialize variables for location recording
@@ -74,7 +105,6 @@
         const recordedLocations = [];
         const recordedInteractions = [];
         var participant;
-
         // Function to start recording
         document.getElementById('ParticipantID').addEventListener('click', () => {
             participant = prompt('Please input participant ID', 999);
@@ -90,7 +120,6 @@
             document.getElementById('Download_Interactions').disabled = true;
             startRecording();
         });
-
         // Function to stop recording
         document.getElementById('stopRecording').addEventListener('click', () => {
             recording = false;
@@ -101,16 +130,14 @@
             document.getElementById('Download_Interactions').disabled = false;
             stopRecording();
         });
-
         // Funcation to download 
         document.getElementById('Download_Locations').addEventListener('click', () => {
             downloadLocations();
         });
-
         document.getElementById('Download_Interactions').addEventListener('click', () => {
             downloadInteractionData();
         });
-       
+    
         /* LOCATION */
         //Real time location tracker
         if (! navigator.geolocation){
@@ -120,7 +147,6 @@
                 navigator.geolocation.getCurrentPosition(getPosition)
             }, 500);
         }
-        
         var circle;
         // Function to get and record current location
         function getPosition(position){
@@ -137,8 +163,7 @@
                 map.removeLayer(circle)
             }
 
-            // Display the closest point on the route
-            
+            // Display the closest point on the route         
             var desiredLocation = {
                 "type": "Feature",
                 "geometry": {
