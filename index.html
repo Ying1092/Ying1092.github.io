@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
     <script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
     <link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
     <meta charset="UTF-8">
@@ -19,28 +18,22 @@
     </style>
 </head>
 <body>
-    <button type ="button" id="ParticipantID">Participant ID</button>
-    <button type ="button" id="startRecording">Start Recording</button>
-    <button type ="button" id="stopRecording" disabled>Stop Recording</button>
-    <button type ="button" id="Download_Locations" disabled>Download Locations</button>
-    <button type ="button" id="Download_Interactions" disabled>Download Interactions</button>
-    
     <div id = "map"></div>
+    <button id="startRecording">Start Recording</button>
+    <button id="stopRecording" disabled>Stop Recording</button>
     <script>
-        /* MAP */
         // Initialize the leaflet map
         L.mapbox.accessToken = 'pk.eyJ1IjoieXFpbmciLCJhIjoiY2xsdzJhMm1mMXpodTNjcHZyc29zaGsxYSJ9.iijVfH5AG9g1Scb_zBYiYA';
-        var map = L.map('map').setView([47.40460386239871, 8.54384625978079], 18);
-
+        var map = L.map('map').fitWorld();
+/*
         var corner1 = L.latLng(47.403934453603725, 8.545603106349375),
         corner2 = L.latLng(47.40670829225139, 8.542888710894422),
         mybounds = L.latLngBounds(corner1, corner2);
-
+*/
         L.tileLayer('https://api.mapbox.com/styles/v1/yqing/cllwfkv1500fd01qu7knch522/tiles/256/{z}/{x}/{y}@2x?access_token=' + L.mapbox.accessToken,{
             tileSize: 512,
-            //bounds: mybounds,
+            /*bounds: mybounds,*/
             zoomOffset: -1,
-            maxZoom: 22,
             attribution:'© <a href="https://www.mapbox.com/contribute/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
         // Display the route on the map
@@ -53,57 +46,27 @@
         L.geoJSON(myGeoJSON, {
             style: myStyle
         }).addTo(map);
-        // Display the start point & detination
-        var StartPoint = L.circle([47.4042067, 8.54516126],{color: '#000000', fillColor: '#000000', fillOpacity: 1, radius: 3}).addTo(map)
-        var myIcon = L.icon({
-            iconUrl: 'my-icon.png',
-            iconSize: [30, 30]
-        });
-        L.marker([47.40519400, 8.54285708], {icon: myIcon}).addTo(map);
         
-        /* RECORDING CONTROL */
         // Initialize variables for location recording
         let recording = false;
         const recordedLocations = [];
-        const recordedInteractions = [];
-        var participant;
 
         // Function to start recording
-        document.getElementById('ParticipantID').addEventListener('click', () => {
-            participant = prompt('Please input participant ID', 999);
-        });
-
         document.getElementById('startRecording').addEventListener('click', () => {
             recording = true;
             document.getElementById('startRecording').disabled = true;
-            document.getElementById('ParticipantID').disabled = true;
             document.getElementById('stopRecording').disabled = false;
-            document.getElementById('Download_Locations').disabled = true;
-            document.getElementById('Download_Interactions').disabled = true;
-            startRecording();
+            recordLocation();
         });
 
         // Function to stop recording
         document.getElementById('stopRecording').addEventListener('click', () => {
             recording = false;
-            document.getElementById('ParticipantID').disabled = false;
             document.getElementById('startRecording').disabled = false;
             document.getElementById('stopRecording').disabled = true;
-            document.getElementById('Download_Locations').disabled = false;
-            document.getElementById('Download_Interactions').disabled = false;
-            stopRecording();
-        });
-
-        // Funcation to download 
-        document.getElementById('Download_Locations').addEventListener('click', () => {
             downloadLocations();
         });
 
-        document.getElementById('Download_Interactions').addEventListener('click', () => {
-            downloadInteractionData();
-        });
-       
-        /* LOCATION */
         //Real time location tracker
         if (! navigator.geolocation){
             console.log('your browser does not support the geolocation')
@@ -112,8 +75,8 @@
                 navigator.geolocation.getCurrentPosition(getPosition)
             }, 500);
         }
-        
-        var circle;
+
+        var marker, circle;
         // Function to get and record current location
         function getPosition(position){
             var lat = position.coords.latitude
@@ -121,63 +84,23 @@
             var accuracy = position.coords.accuracy
 
             if (recording) {
-                var time = Date.now();
-                recordedLocations.push({ lat, long, time, accuracy});
+                recordedLocations.push({ lat, long });
+            }
+
+            if (marker){
+                map.removeLayer(marker)
             }
 
             if (circle){
                 map.removeLayer(circle)
             }
 
-            // Display the closest point on the route
-            
-            var desiredLocation = {
-                "type": "Feature",
-                "geometry": {
-                "type": "Point",
-                "coordinates": [long, lat] 
-                }
-            };
-            var nearestPointOnLine = turf.pointOnLine(myGeoJSON, desiredLocation);
-            var nearestPointCoords = nearestPointOnLine.geometry.coordinates;
-            circle = L.circle([nearestPointCoords[1],nearestPointCoords[0]],{color: '#c65247', fillColor: '#c65247', fillOpacity: 1, radius: 5}).addTo(map)      
+            circle = L.circle([lat, long],{color: '#c65247', fillColor: '#c65247', fillOpacity: 1, radius: 5})
+
+            var featureGroup = L.featureGroup([circle]).addTo(map)
+            map.fitBounds(featureGroup.getBounds())
         }
 
-        /* INTERACTION */
-        function startRecording() {
-            map.on('zoomend', recordZoom);
-            map.on('moveend', recordPan);
-        }
-
-        function recordZoom(event) {
-        if (recording) {
-            // Record zoom interaction
-            var ZoomTime = Date.now();
-            recordedInteractions.push({
-            type: 'zoom',
-            zoomLevel: event.target.getZoom(), ZoomTime,
-            });
-         }
-        }
-
-        function recordPan(event) {
-        if (recording) {
-            // Record pan interaction
-            var PanTime = Date.now();
-            recordedInteractions.push({
-            type: 'pan',
-            latlng: event.target.getCenter(),PanTime,
-            });
-         }
-        }
-
-        function stopRecording() {
-            map.off('zoomend', recordZoom);
-            map.off('moveend', recordPan);
-            //console.log('Recording stopped');
-        }
-
-        /* DOWNLOAD */
         // Function to download recorded locations as a text file
         function downloadLocations() {
             const data = JSON.stringify(recordedLocations);
@@ -185,18 +108,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = participant + '_location.txt';
-            a.click();
-        }
-
-        // Function to download recorded interaction data as a text file
-        function downloadInteractionData() {
-            const interactionData = JSON.stringify(recordedInteractions);
-            const blob = new Blob([interactionData], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = participant + '_interaction.txt';
+            a.download = 'recorded_locations.txt';
             a.click();
         }
     </script>
