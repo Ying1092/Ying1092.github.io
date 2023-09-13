@@ -24,7 +24,7 @@
     <script>
         // Initialize the leaflet map
         L.mapbox.accessToken = 'pk.eyJ1IjoieXFpbmciLCJhIjoiY2xsdzJhMm1mMXpodTNjcHZyc29zaGsxYSJ9.iijVfH5AG9g1Scb_zBYiYA';
-        var map = L.map('map').fitWorld();
+        var map = L.map('map').setView([47.40460386239871, 8.54384625978079], 18);
 /*
         var corner1 = L.latLng(47.403934453603725, 8.545603106349375),
         corner2 = L.latLng(47.40670829225139, 8.542888710894422),
@@ -98,7 +98,7 @@
             circle = L.circle([lat, long],{color: '#c65247', fillColor: '#c65247', fillOpacity: 1, radius: 5})
 
             var featureGroup = L.featureGroup([circle]).addTo(map)
-            map.fitBounds(featureGroup.getBounds())
+            //map.fitBounds(featureGroup.getBounds())
         }
 
         // Function to download recorded locations as a text file
